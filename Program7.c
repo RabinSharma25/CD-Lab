@@ -1,15 +1,16 @@
 // operator precedence parser
+// this is our final working code 
 #include <stdio.h>
+#include <ctype.h> //for isupper function to check for capital letters
 
 char precedenceTab[100][100];
 char terminal[50];
 int terminalNo = 1;
-
 void displayProductions(char prod[100][100], int pLen[], int noProd)
 {
     for (int i = 1; i <= noProd; i++)
     {
-        for (int j = 1; j <=pLen[i]; j++)
+        for (int j = 1; j <= pLen[i]; j++)
         {
             printf("%c", prod[i][j]);
         }
@@ -24,7 +25,7 @@ void createPTab()
 
     for (int i = 0; i <= terminalNo; i++)
     {
-        for (int j =0; j <= terminalNo; j++)
+        for (int j = 0; j <= terminalNo; j++)
         {
             if (i == j && i == 0)
             {
@@ -68,7 +69,7 @@ void createPTab()
             }
         }
     }
-    
+
     printf("The precedence Table is as follows:\n");
     for (int i = 0; i <= terminalNo; i++)
     {
@@ -80,12 +81,83 @@ void createPTab()
     }
 }
 
+char precedence(char val1, char val2)
+{
+    // val1 -- stack
+    // val2 -- strin=g
+    int i;
+    int j;
+    for (int k = 1; k <= terminalNo; k++)
+    {
+
+        if (terminal[k] == val1)
+        {
+            i = k;
+        }
+        if (terminal[k] == val2)
+        {
+            j = k;
+        }
+    }
+
+    return precedenceTab[i][j];
+}
+
+void stringChecking(char str[])
+{
+
+    int lookahead = 0;
+    char stack[100];
+    stack[0] = '$';
+    int top = 0;
+    printf("Stack           Lookahead\n");
+
+    while (1 == 1)
+    {
+        for (int i = 0; i <= top; i++)
+        {
+            printf(" %c", stack[i]);
+        }
+        printf("            ");
+        for (int i = 0; i <= lookahead; i++)
+        {
+            printf(" %c", str[i]);
+        }
+        printf("\n");
+        if (precedence(stack[top], str[lookahead]) == '>')
+        {
+            // pop
+            top--;
+        }
+
+        else if (precedence(stack[top], str[lookahead]) == '<')
+        {
+            top++;
+            // lookahead++;
+            stack[top] = str[lookahead];
+            lookahead++;
+        }
+
+        else if (precedence(stack[top], str[lookahead]) == '_')
+        {
+            // break
+            printf("String is rejected\n");
+            break;
+        }
+
+        if (stack[top] == '$' && str[lookahead] == '$')
+        {
+            printf("string accepted\n");
+            break;
+        }
+    }
+}
 int main()
 {
-    int noOfProductions,flag;
+    int noOfProductions, flag;
     int productionLength[100];
     char productions[50][100];
-    
+
     printf("Enter the number of productions\n");
     scanf("%d", &noOfProductions);
     for (int i = 1; i <= noOfProductions; i++)
@@ -99,7 +171,6 @@ int main()
             scanf(" %c", &productions[i][j]);
         }
     }
-
     // Terminal Determining part
     for (int i = 1; i <= noOfProductions; i++)
     {
@@ -132,6 +203,17 @@ int main()
     printf("The set of productions are as follows:\n");
     displayProductions(productions, productionLength, noOfProductions);
     createPTab();
+    char str[100];
+    int len;
+    printf("Enter the length of the string you want to check\n");
+    scanf("%d", &len);
+    printf("Enter the string you want to check\n");
+    for (int i = 0; i < len; i++)
+    {
+        scanf(" %c", &str[i]);
+    }
+    stringChecking(str);
+
     return 0;
 }
 
