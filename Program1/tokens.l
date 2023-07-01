@@ -13,7 +13,7 @@
 [0-9]+ {num = atoi(yytext);
 		printf("%d",num);
 		}
-[A-Za-z_(A-Za-z_0-9)*]+ {printf("Identifier");}
+[A-Za-z][(A-Za-z_0-9)*]+ {printf("Identifier");}
 
 %%      
 
