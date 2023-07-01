@@ -6,8 +6,9 @@ int consonent = 0;
 %}
 
 %%
-"a"|"e"|"i"|"o"|"u"|"A"|"E"|"I"|"O"|"U" {printf("It is a vowel\n");vowel++;}
-[a-zA-Z] {printf("It is a consonent\n");consonent++;}
+"a"|"e"|"i"|"o"|"u"|"A"|"E"|"I"|"O"|"U" {printf("Vowel\n");vowel++;}
+[a-zA-Z] {printf("Consonent\n");consonent++;}
+\n  {printf("\nVowel count:%d\nConsonent Count:%d\n",vowel,consonent);vowel=0;consonent=0;}
 %%
 
 int yywrap()
