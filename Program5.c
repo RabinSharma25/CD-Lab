@@ -4,23 +4,26 @@ brought above in previous production and the follows needs to be special here.
 In first and follow functions Stacks are used to store the return address of j or k which might change by doing recursion
 and as Stack follows Last In First Out methods hence its easier to implement in resursion as it return address has
 similar concept.
-*/
 
+Note: For some reason this update of the code returns $ as the follow of any variable.
+*/
 #include <stdio.h>
 #include <ctype.h>
 
 int i, j, k, l, state;
 int noOfProductions, productionLength[50];
 char productions[50][50];
-char FIRST[10];
-char FOLLOW[10];
-char stack[100];
-int top, top1 = 0;
-int STACK1[100];
-char vari[100];
-int noOfVari, noOfFirst, noOfFollow;
 
-void first(char var)
+char vari[100];
+int noOfVari;
+
+char fir[10];
+char fol[10];
+int top = 1;
+int top1 = 0;
+int STACK1[100];
+
+char *first(char var)
 {
     for (j = 0; j < noOfProductions; j++)
     {
@@ -36,19 +39,24 @@ void first(char var)
             }
             else
             {
+                fir[top] = productions[j][3];
                 top++;
-                stack[top] = productions[j][3];
+                fir[0] = top + '0'; // storing the first element as digit
             }
         }
     }
+
+    return fir;
 }
 
-char follow(char var)
+char *follow(char var)
 {
     if (var == productions[0][0])
     {
+        fol[top] = '$';
         top++;
-        stack[top] = '$';
+
+        fol[0] = top + '0';
     }
 
     for (j = 0; j < noOfProductions; j++)
@@ -84,28 +92,42 @@ char follow(char var)
                 }
                 else
                 {
+                    fol[top] = productions[j][k + 1];
                     top++;
-                    stack[top] = productions[j][k + 1];
+                    fol[0] = top + '0';
                 }
             }
         }
     }
+    return fol;
 }
 
-int main()
+void display(char var)
 {
-    printf("Enter the no of productions:\n");
-    scanf("%d", &noOfProductions);
-    for (i = 0; i < noOfProductions; i++)
+    char *arr;
+    printf("First(%c)  - ", var);
+    arr = first(var);
+    for (int i = 1; i < (arr[0] - 48); i++)
     {
-        printf("Enter the length of the productions no. %d in the format E->aB:", i + 1);
-        scanf("%d", &productionLength[i]);
-        printf("Enter the production no. %d and enter \"#\" instead of epsilon:\n", i + 1);
-        for (j = 0; j < productionLength[i]; j++)
-        {
-            scanf(" %c", &productions[i][j]);
-        }
+        printf("%c,", arr[i]);
     }
+    printf("\b \b\n");
+    top = 1;
+    top1 = 0;
+    printf("Follow(%c) - ", var);
+    arr = follow(var);
+    for (int i = 1; i < (arr[0] - 48); i++)
+    {
+        printf("%c,", arr[i]);
+    }
+    printf("\b \b \n\n");
+    top = 1;
+    top1 = 0;
+}
+
+void populateVari()
+{
+    // searching for variables
     k = -1;
     for (i = 0; i < noOfProductions; i++)
     {
@@ -125,85 +147,35 @@ int main()
         }
     }
     noOfVari = k + 1;
+}
+
+void input()
+{
+    printf("Enter the no of productions:\n");
+    scanf("%d", &noOfProductions);
+    for (i = 0; i < noOfProductions; i++)
+    {
+        printf("Enter the length of the productions no. %d in the format E->aB:", i + 1);
+        scanf("%d", &productionLength[i]);
+        printf("Enter the production no. %d and enter \"#\" instead of epsilon:\n", i + 1);
+        for (j = 0; j < productionLength[i]; j++)
+        {
+            scanf(" %c", &productions[i][j]);
+        }
+    }
+}
+int main()
+{
+    input();
+    populateVari();
+    // displaying first and follow
 
     for (i = 0; i < noOfVari; i++)
     {
-        top = 0;
-        first(vari[i]);
-
-        // Removing the first duplicates
-        k = -1;
-        for (j = 1; j <= top; j++)
-        {
-            state = 0;
-            for (l = 0; l <= k; l++)
-            {
-                if (FIRST[l] == stack[j])
-                {
-                    state = 1;
-                    break;
-                }
-            }
-            if (state == 0)
-            {
-                k++;
-                FIRST[k] = stack[j];
-            }
-        }
-        noOfFirst = k + 1;
-
-        top = 0;
-        follow(vari[i]);
-
-        // Removing the follow duplicates
-        k = -1;
-        for (j = 1; j <= top; j++)
-        {
-            state = 0;
-            for (l = 0; l <= k; l++)
-            {
-                if (FOLLOW[l] == stack[j])
-                {
-                    state = 1;
-                    break;
-                }
-            }
-            if (state == 0)
-            {
-                k++;
-                FOLLOW[k] = stack[j];
-            }
-        }
-        noOfFollow = k + 1;
-
-        printf("%c FIRST->\t", vari[i]);
-        for (int j = 0; j < noOfFirst; j++)
-        {
-            if (j == noOfFirst - 1)
-            {
-                printf("%c", FIRST[j]);
-            }
-            else
-            {
-                printf("%c,", FIRST[j]);
-            }
-        }
-        printf("\n");
-
-        printf("%c FOLLOW->\t", vari[i]);
-        for (int j = 0; j < noOfFollow; j++)
-        {
-            if (j == noOfFollow - 1)
-            {
-                printf("%c", FOLLOW[j]);
-            }
-            else
-            {
-                printf("%c,", FOLLOW[j]);
-            }
-        }
-        printf("\n\n");
+        display(vari[i]);
     }
+
+    return 0;
 }
 
 /* Try the following Productions:
@@ -256,6 +228,7 @@ C->De
 D->b
 
 Set of Production 5:
+
 5
 4
 S->a
@@ -281,7 +254,7 @@ C->BA
 4
 A->d
 
-
+Set of Production 7:
 8
 5
 E->TS
