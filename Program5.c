@@ -3,25 +3,28 @@ This program works for all first and all follow calculation except for a situati
 brought above in previous production and the follows needs to be special here.
 In first and follow functions Stacks are used to store the return address of j or k which might change by doing recursion
 and as Stack follows Last In First Out methods hence its easier to implement in resursion as it return address has
-similar concept.
-
-Note: For some reason this update of the code returns $ as the follow of any variable.
+similar concept and the functions first and follow returns an array cotaining the calculated first and follow.
 */
+
 #include <stdio.h>
 #include <ctype.h>
 
 int i, j, k, l, state;
-int noOfProductions, productionLength[50];
-char productions[50][50];
 
-char vari[100];
+char productions[50][50]; // Array to store productions
+int noOfProductions, productionLength[50];
+
+char vari[100]; // array containing unique variables
 int noOfVari;
 
-char fir[10];
-char fol[10];
+int STACK1[100]; // array to track recursion
 int top = 1;
 int top1 = 0;
-int STACK1[100];
+
+char firFol[100]; // array for raw calculated first and follow
+
+char fil[100]; // array storing filtered first and follow
+int noOfItems;
 
 char *first(char var)
 {
@@ -39,24 +42,24 @@ char *first(char var)
             }
             else
             {
-                fir[top] = productions[j][3];
+                firFol[top] = productions[j][3];
                 top++;
-                fir[0] = top + '0'; // storing the first element as digit
+                firFol[0] = top + '0'; // storing the first element as digit
             }
         }
     }
 
-    return fir;
+    return firFol;
 }
 
 char *follow(char var)
 {
     if (var == productions[0][0])
     {
-        fol[top] = '$';
+        firFol[top] = '$';
         top++;
 
-        fol[0] = top + '0';
+        firFol[0] = top + '0';
     }
 
     for (j = 0; j < noOfProductions; j++)
@@ -92,14 +95,37 @@ char *follow(char var)
                 }
                 else
                 {
-                    fol[top] = productions[j][k + 1];
+                    firFol[top] = productions[j][k + 1];
                     top++;
-                    fol[0] = top + '0';
+                    firFol[0] = top + '0';
                 }
             }
         }
     }
-    return fol;
+    return firFol;
+}
+
+void filter(char *arr) // function for removing duplicacies
+{
+    k = -1;
+    for (j = 1; j < (arr[0] - 48); j++)
+    {
+        state = 0;
+        for (l = 0; l <= k; l++)
+        {
+            if (fil[l] == arr[j])
+            {
+                state = 1;
+                break;
+            }
+        }
+        if (state == 0)
+        {
+            k++;
+            fil[k] = arr[j];
+        }
+    }
+    noOfItems = k + 1;
 }
 
 void display(char var)
@@ -107,27 +133,28 @@ void display(char var)
     char *arr;
     printf("First(%c)  - ", var);
     arr = first(var);
-    for (int i = 1; i < (arr[0] - 48); i++)
+    filter(arr);
+    for (int i = 0; i < noOfItems; i++)
     {
-        printf("%c,", arr[i]);
+        printf("%c,", fil[i]);
     }
     printf("\b \b\n");
     top = 1;
     top1 = 0;
     printf("Follow(%c) - ", var);
     arr = follow(var);
-    for (int i = 1; i < (arr[0] - 48); i++)
+    filter(arr);
+    for (int i = 0; i < noOfItems; i++)
     {
-        printf("%c,", arr[i]);
+        printf("%c,", fil[i]);
     }
     printf("\b \b \n\n");
     top = 1;
     top1 = 0;
 }
 
-void populateVari()
+void populateVari() // This function populates the vari array with the unique variables in the productions.
 {
-    // searching for variables
     k = -1;
     for (i = 0; i < noOfProductions; i++)
     {
@@ -164,6 +191,7 @@ void input()
         }
     }
 }
+
 int main()
 {
     input();
