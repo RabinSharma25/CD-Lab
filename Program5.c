@@ -1,5 +1,5 @@
 /*
-This program works for all first and all follow calculation except for a situation where the epsilon need to be
+This program works for all first and most follow calculation except for a situation where the epsilon need to be
 brought above in previous production and the follows needs to be special here.
 In first and follow functions Stacks are used to store the return address of j or k which might change by doing recursion
 and as Stack follows Last In First Out methods hence its easier to implement in resursion as it return address has
@@ -9,7 +9,7 @@ similar concept and the functions first and follow returns an array cotaining th
 #include <stdio.h>
 #include <ctype.h>
 
-int i, j, k, l, state;
+int i, j, k, l, p, state;
 
 char productions[50][50]; // Array to store productions
 int noOfProductions, productionLength[50];
@@ -26,33 +26,135 @@ char firFol[100]; // array for raw calculated first and follow
 char fil[100]; // array storing filtered first and follow
 int noOfItems;
 
-char *first(char var)
+char stack[100];
+int col, ctop = 0;
+int cstack[100];
+
+char *arr1;
+int x, xtop[100], xt = 0;
+
+int xtop1 = 0;
+char *func(char var, char oVar);
+int pcount,flag;
+char *first(char var, char oVar)
 {
+    pcount = 0;
+    flag = 0;
+    col = 3;
     for (j = 0; j < noOfProductions; j++)
     {
         if (var == productions[j][0])
         {
-            if (isupper(productions[j][3]))
+            pcount++;
+            if (isupper(productions[j][col]))
             {
+                flag = 1;
                 top1++;
                 STACK1[top1] = j; // Storing the return address as the variable j changes when going inside first function
-                first(productions[j][3]);
+                top1++;
+                STACK1[top1] = flag;
+                ctop++;
+                cstack[ctop] = col;
+                xt++;
+                xtop[xt] = top;
+                top1++;
+                STACK1[top1] = pcount;
+                arr1 = first(productions[j][col], oVar);
+                pcount = STACK1[top1];
+                top1--;
+                col = cstack[ctop];
+                ctop--;
+                flag = STACK1[top1];
+                top1--;
                 j = STACK1[top1];
                 top1--;
+                xt--;
+
+                if (arr1[(arr1[0] - 48) - 1] == '&' && col == productionLength[j] - 1 && var == oVar)
+                {
+                    firFol[top] = '#';
+                    top++;
+                    firFol[0] = top + '0';
+                }
+                else if (arr1[(arr1[0] - 48) - 1] == '&')
+                {
+                    ctop++;
+                    cstack[ctop] = col;
+                    func(var, oVar);
+                    col = cstack[ctop];
+                    ctop--;
+                }
+            }
+            else if (productions[j][col] == '#' && col == productionLength[j] - 1 && var != oVar)
+            {
+                firFol[top] = '&';
+                top++;
+                firFol[0] = top + '0';
             }
             else
             {
-                firFol[top] = productions[j][3];
+                firFol[top] = productions[j][col];
                 top++;
                 firFol[0] = top + '0'; // storing the first element as digit
             }
         }
     }
 
+    for (x = xtop[xt]; x < top; x++)
+    {
+        if ((flag == 1 && firFol[top - 1] == '&' && pcount == 1) || (flag == 0 && firFol[x] == '&') || (flag == 1 && firFol[x] == '&' && pcount != 1))
+        {
+            firFol[top] = '&';
+            top++;
+            firFol[0] = top + '0';
+            break;
+        }
+    }
     return firFol;
 }
 
-char *follow(char var)
+char *func(char var, char oVar)
+{
+    col++;
+    if (isupper(productions[j][col]))
+    {
+        top1++;
+        STACK1[top1] = j; // Storing the return address as the variable j changes when going inside first function
+        ctop++;
+        cstack[ctop] = col;
+        xt++;
+        xtop[xt] = top;
+        arr1 = first(productions[j][col], oVar);
+
+        col = cstack[ctop];
+        ctop--;
+        j = STACK1[top1];
+        top1--;
+        xt--;
+        if (arr1[(arr1[0] - 48) - 1] == '&' && col == productionLength[j] - 1 && var == oVar)
+        {
+            firFol[top] = '#';
+            top++;
+            firFol[0] = top + '0';
+        }
+        else if (arr1[(arr1[0] - 48) - 1] == '&' && col == productionLength[j] - 1)
+        {
+            return 0;
+        }
+        else if (arr1[(arr1[0] - 48) - 1] == '&')
+        {
+            func(var, oVar);
+        }
+    }
+    else
+    {
+        firFol[top] = productions[j][col];
+        top++;
+        firFol[0] = top + '0';
+    }
+}
+
+char *follow(char var, char oVar)
 {
     if (var == productions[0][0])
     {
@@ -77,7 +179,7 @@ char *follow(char var)
                 STACK1[top1] = j;
                 top1++;
                 STACK1[top1] = k;
-                follow(productions[j][0]);
+                follow(productions[j][0], oVar);
                 k = STACK1[top1];
                 top1--;
                 j = STACK1[top1];
@@ -89,7 +191,7 @@ char *follow(char var)
                 {
                     top1++;
                     STACK1[top1] = j;
-                    first(productions[j][k + 1]);
+                    first(productions[j][k + 1], oVar);
                     j = STACK1[top1];
                     top1--;
                 }
@@ -119,7 +221,7 @@ void filter(char *arr) // function for removing duplicacies
                 break;
             }
         }
-        if (state == 0)
+        if (state == 0 && arr[j] != '&')
         {
             k++;
             fil[k] = arr[j];
@@ -132,7 +234,7 @@ void display(char var)
 {
     char *arr;
     printf("First(%c)  - ", var);
-    arr = first(var);
+    arr = first(var, var);
     filter(arr);
     for (int i = 0; i < noOfItems; i++)
     {
@@ -142,7 +244,7 @@ void display(char var)
     top = 1;
     top1 = 0;
     printf("Follow(%c) - ", var);
-    arr = follow(var);
+    arr = follow(var, var);
     filter(arr);
     for (int i = 0; i < noOfItems; i++)
     {
@@ -300,4 +402,104 @@ R->#
 F->(E)
 4
 F->a
+
+Set of Production 8:
+8
+5
+E->TS
+6
+S->+TS
+4
+S->#
+5
+T->FR
+6
+R->*FR
+4
+R->#
+4
+F->#
+4
+F->a
+
+Set of Production 9:
+6
+5
+S->AC
+4
+A->#
+4
+A->B
+4
+B->c
+4
+C->d
+4
+C->#
+
+Set of Production 10:
+9
+7
+S->aBDh
+5
+B->cC
+5
+C->bC
+4
+C->#
+5
+D->EF
+4
+E->g
+4
+E->#
+4
+F->f
+4
+F->#
+
+Set of Production 11:
+5
+6
+S->(L)
+4
+S->a
+5
+L->SK
+6
+K->,SK
+4
+K->#
+
+Set of Production 12:
+4
+7
+S->AaAb
+7
+S->BbBa
+4
+A->#
+4
+B->#
+
+Set of Production 13:
+9
+6
+S->ACB
+6
+S->CbB
+5
+S->Ba
+5
+A->da
+5
+A->BC
+4
+B->g
+4
+B->#
+4
+C->h
+4
+C->#
 */
